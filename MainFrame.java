@@ -13,7 +13,7 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
-        container = new JPanel(cardLayout); // ✅ FIX HERE
+        container = new JPanel(cardLayout);
 
         LoginPanel loginPanel = new LoginPanel(this);
         RegistrationPanel registrationPanel = new RegistrationPanel(this);
@@ -22,13 +22,18 @@ public class MainFrame extends JFrame {
         container.add(registrationPanel, "Register");
 
         add(container);
-
-        cardLayout.show(container, "Register"); // initial page
+        cardLayout.show(container, "Login");
         setVisible(true);
     }
 
     public void showPage(String page) {
         cardLayout.show(container, page);
+    }
+
+    public void openChat(String username) {
+        ChatPanel chatPanel = new ChatPanel(username);
+        container.add(chatPanel, "Chat");
+        showPage("Chat");
     }
 
     public static void main(String[] args) {

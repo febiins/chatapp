@@ -11,7 +11,6 @@ public class LoginPanel extends JPanel implements ActionListener {
 
     public LoginPanel(MainFrame frame) {
         this.frame = frame;
-
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("Login", JLabel.CENTER);
@@ -32,7 +31,6 @@ public class LoginPanel extends JPanel implements ActionListener {
         add(form, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel();
-
         loginBtn = new JButton("Login");
         registerBtn = new JButton("Register");
 
@@ -48,20 +46,21 @@ public class LoginPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == loginBtn) {
+            String user = usernameField.getText();
+            String pass = new String(passwordField.getPassword());
 
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-
-            if (username.isEmpty() || password.isEmpty()) {
+            if (user.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "All fields required");
                 return;
             }
 
-            // Temporary login success
-            JOptionPane.showMessageDialog(this, "Login Successful");
-
-            // NEXT STEP:
-            // new ChatClientFrame(username);
+            if (UserDAO.login(user, pass)) {
+                JOptionPane.showMessageDialog(this, "Login Successful");
+                frame.openChat(user);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Invalid username or password");
+            }
         }
 
         else if (e.getSource() == registerBtn) {

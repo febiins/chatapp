@@ -7,12 +7,11 @@ public class RegistrationPanel extends JPanel implements ActionListener {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
-    private MainFrame frame;
     private JButton registerBtn, loginBtn;
+    private MainFrame frame;
 
     public RegistrationPanel(MainFrame frame) {
         this.frame = frame;
-
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("Register", JLabel.CENTER);
@@ -37,7 +36,6 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         add(form, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel();
-
         registerBtn = new JButton("Register");
         loginBtn = new JButton("Back to Login");
 
@@ -53,20 +51,25 @@ public class RegistrationPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == registerBtn) {
-
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+            String user = usernameField.getText();
+            String pass = new String(passwordField.getPassword());
             String confirm = new String(confirmPasswordField.getPassword());
 
-            if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            if (user.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "All fields required");
             }
-            else if (!password.equals(confirm)) {
+            else if (!pass.equals(confirm)) {
                 JOptionPane.showMessageDialog(this, "Passwords do not match");
             }
             else {
-                JOptionPane.showMessageDialog(this, "Registration Successful");
-                frame.showPage("Login");
+                if (UserDAO.register(user, pass)) {
+                    JOptionPane.showMessageDialog(this,
+                            "Registration Successful");
+                    frame.showPage("Login");
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Username already exists");
+                }
             }
         }
 
