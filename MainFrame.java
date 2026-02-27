@@ -1,30 +1,32 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class MainFrame extends JFrame{
+public class MainFrame extends JFrame {
+
     CardLayout cardLayout;
     JPanel container;
 
-    public MainFrame(){
+    public MainFrame() {
         setTitle("Chat App");
-        setSize(420,350);
+        setSize(420, 350);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        cardLayout=new CardLayout();
-        container=new JPanel();
-        LoginPanel loginPanel = new LoginPanel(this);
-        RegistrationPanel registrationPanel= new RegistrationPanel(this);
+        cardLayout = new CardLayout();
+        container = new JPanel(cardLayout); // ✅ FIX HERE
 
-        container.add(loginPanel,"Login");
-        container.add(registrationPanel,"Register");
+        LoginPanel loginPanel = new LoginPanel(this);
+        RegistrationPanel registrationPanel = new RegistrationPanel(this);
+
+        container.add(loginPanel, "Login");
+        container.add(registrationPanel, "Register");
 
         add(container);
-        cardLayout.show(container,"Register");
+
+        cardLayout.show(container, "Register"); // initial page
         setVisible(true);
-
-
     }
+
     public void showPage(String page) {
         cardLayout.show(container, page);
     }
