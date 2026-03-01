@@ -5,8 +5,7 @@ import java.awt.event.*;
 public class RegistrationPanel extends JPanel implements ActionListener {
 
     private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JPasswordField confirmPasswordField;
+    private JPasswordField passwordField, confirmField;
     private JButton registerBtn, loginBtn;
     private MainFrame frame;
 
@@ -30,8 +29,8 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         form.add(passwordField);
 
         form.add(new JLabel("Confirm Password:"));
-        confirmPasswordField = new JPasswordField();
-        form.add(confirmPasswordField);
+        confirmField = new JPasswordField();
+        form.add(confirmField);
 
         add(form, BorderLayout.CENTER);
 
@@ -51,29 +50,20 @@ public class RegistrationPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == registerBtn) {
-            String user = usernameField.getText();
-            String pass = new String(passwordField.getPassword());
-            String confirm = new String(confirmPasswordField.getPassword());
+            String u = usernameField.getText();
+            String p = new String(passwordField.getPassword());
+            String c = new String(confirmField.getPassword());
 
-            if (user.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "All fields required");
-            }
-            else if (!pass.equals(confirm)) {
+            if (!p.equals(c)) {
                 JOptionPane.showMessageDialog(this, "Passwords do not match");
+            } else if (UserDAO.register(u, p)) {
+                JOptionPane.showMessageDialog(this, "Registration Successful");
+                frame.showPage("Login");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Username already exists");
             }
-            else {
-                if (UserDAO.register(user, pass)) {
-                    JOptionPane.showMessageDialog(this,
-                            "Registration Successful");
-                    frame.showPage("Login");
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "Username already exists");
-                }
-            }
-        }
-
-        else if (e.getSource() == loginBtn) {
+        } else {
             frame.showPage("Login");
         }
     }

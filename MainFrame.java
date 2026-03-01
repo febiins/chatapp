@@ -3,23 +3,20 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
-    CardLayout cardLayout;
-    JPanel container;
+    private CardLayout cardLayout;
+    private JPanel container;
 
     public MainFrame() {
         setTitle("Chat App");
-        setSize(420, 350);
+        setSize(700, 450);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
         container = new JPanel(cardLayout);
 
-        LoginPanel loginPanel = new LoginPanel(this);
-        RegistrationPanel registrationPanel = new RegistrationPanel(this);
-
-        container.add(loginPanel, "Login");
-        container.add(registrationPanel, "Register");
+        container.add(new LoginPanel(this), "Login");
+        container.add(new RegistrationPanel(this), "Register");
 
         add(container);
         cardLayout.show(container, "Login");

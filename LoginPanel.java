@@ -49,11 +49,6 @@ public class LoginPanel extends JPanel implements ActionListener {
             String user = usernameField.getText();
             String pass = new String(passwordField.getPassword());
 
-            if (user.isEmpty() || pass.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "All fields required");
-                return;
-            }
-
             if (UserDAO.login(user, pass)) {
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 frame.openChat(user);
@@ -61,9 +56,7 @@ public class LoginPanel extends JPanel implements ActionListener {
                 JOptionPane.showMessageDialog(this,
                         "Invalid username or password");
             }
-        }
-
-        else if (e.getSource() == registerBtn) {
+        } else {
             frame.showPage("Register");
         }
     }
