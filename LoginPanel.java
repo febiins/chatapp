@@ -21,11 +21,13 @@ public class LoginPanel extends JPanel implements ActionListener {
         form.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
         form.add(new JLabel("Username:"));
-        usernameField = new JTextField(5);
+        usernameField = new JTextField();
+        usernameField.setColumns(10);
         form.add(usernameField);
 
         form.add(new JLabel("Password:"));
-        passwordField = new JPasswordField(5);
+        passwordField = new JPasswordField();
+        passwordField.setColumns(10);
         form.add(passwordField);
 
         add(form, BorderLayout.CENTER);

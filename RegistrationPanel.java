@@ -22,14 +22,17 @@ public class RegistrationPanel extends JPanel implements ActionListener {
 
         form.add(new JLabel("Username:"));
         usernameField = new JTextField(5);
+        usernameField.setColumns(10);
         form.add(usernameField);
 
         form.add(new JLabel("Password:"));
-        passwordField = new JPasswordField(5);
+        passwordField = new JPasswordField();
+        passwordField.setColumns(10);
         form.add(passwordField);
 
         form.add(new JLabel("Confirm Password:"));
-        confirmField = new JPasswordField(5);
+        confirmField = new JPasswordField();
+        confirmField.setColumns(10);
         form.add(confirmField);
 
         add(form, BorderLayout.CENTER);
