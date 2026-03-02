@@ -6,70 +6,65 @@ public class ClientHandler extends Thread {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
+
     private String username;
+    private int userId;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
 
-    // Called by ChatServer
+    // Used by ChatServer to send messages
     public void send(String msg) {
         out.println(msg);
     }
 
     @Override
     public void run() {
-        try {
-            in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(
-                    new OutputStreamWriter(socket.getOutputStream()), true);
+    try {
+        in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream(), true);
 
-            // First message = username
-            username = in.readLine();
-            ChatServer.clients.put(username, this);
+        username = in.readLine();
+        ChatServer.clients.put(username, this);
 
-            String encrypted;
-            while ((encrypted = in.readLine()) != null) {
+        String enc;
+        while ((enc = in.readLine()) != null) {
+            String msg = CryptoUtil.decrypt(enc);
 
-                String msg = CryptoUtil.decrypt(encrypted);
-                if (msg == null) continue;
+            //  PRIVATE CHAT
+            if (msg.startsWith("@")) {
+                int i = msg.indexOf(" ");
+                String toUser = msg.substring(1, i);
+                String text = msg.substring(i + 1);
 
-                // 🔒 PRIVATE CHAT
-                if (msg.startsWith("@")) {
-                    int i = msg.indexOf(" ");
-                    if (i != -1) {
-                        ChatServer.privateMessage(
-                                msg.substring(1, i),
-                                username,
-                                msg.substring(i + 1));
-                    }
-                }
-
-                // 👥 GROUP CHAT
-                else if (msg.startsWith("#")) {
-                    int i = msg.indexOf(" ");
-                    if (i != -1) {
-                        String group = msg.substring(1, i);
-                        String text = msg.substring(i + 1);
-
-                        ChatServer.joinGroup(group, this);
-                        ChatServer.groupMessage(
-                                group, username, text);
-                    }
-                }
+                ChatServer.sendPrivate(
+                        toUser,
+                        CryptoUtil.encrypt(
+                                "[PRIVATE] " + username + ": " + text)
+                );
             }
 
-        } catch (Exception e) {
-            System.out.println("Client disconnected: " + username);
-        } finally {
-            ChatServer.clients.remove(username);
+            //  GROUP CHAT (FIXED)
+            else if (msg.startsWith("#")) {
+                int i = msg.indexOf(" ");
+                String group = msg.substring(1, i);
+                String text = msg.substring(i + 1);
 
-            try {
-                socket.close();
-            } catch (IOException e) {
-                System.out.println(e);
+                //  JOIN GROUP FIRST
+                ChatServer.joinGroup(group, this);
+
+                //  SEND TO GROUP MEMBERS
+                ChatServer.sendGroup(
+                        group,
+                        CryptoUtil.encrypt(
+                                "[" + group + "] " + username + ": " + text)
+                );
             }
         }
+    } catch (Exception e) {
+        ChatServer.clients.remove(username);
     }
+}
 }

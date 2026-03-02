@@ -3,46 +3,35 @@ import java.util.*;
 
 public class ChatServer {
 
-    // Online users
     static Map<String, ClientHandler> clients = new HashMap<>();
 
-    // Group name → members
+    // 🔥 ADD THIS: group → members
     static Map<String, Set<ClientHandler>> groups = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
-
         ServerSocket server = new ServerSocket(5000);
-        System.out.println("Chat Server started on port 5000");
+        System.out.println("Server started");
 
-        while (true) {
-            Socket socket = server.accept();
-            new ClientHandler(socket).start();
-        }
+        while (true)
+            new ClientHandler(server.accept()).start();
     }
 
     // PRIVATE MESSAGE
-    static void privateMessage(String toUser, String fromUser, String msg) {
-        ClientHandler target = clients.get(toUser);
-        if (target != null) {
-            target.send(CryptoUtil.encrypt(
-                "[PRIVATE] " + fromUser + ": " + msg
-            ));
-        }
+    static void sendPrivate(String user, String msg) {
+        if (clients.containsKey(user))
+            clients.get(user).send(msg);
     }
 
     // GROUP MESSAGE
-    static void groupMessage(String group, String fromUser, String msg) {
-        Set<ClientHandler> members = groups.get(group);
-        if (members != null) {
-            for (ClientHandler ch : members) {
-                ch.send(CryptoUtil.encrypt(
-                    "[" + group + "] " + fromUser + ": " + msg
-                ));
-            }
+    static void sendGroup(String group, String msg) {
+        if (!groups.containsKey(group)) return;
+
+        for (ClientHandler ch : groups.get(group)) {
+            ch.send(msg);
         }
     }
 
-    // Join a group (auto join on first message)
+    // JOIN GROUP
     static void joinGroup(String group, ClientHandler ch) {
         groups.computeIfAbsent(group, g -> new HashSet<>()).add(ch);
     }

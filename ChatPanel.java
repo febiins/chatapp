@@ -1,105 +1,101 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 
-public class ChatPanel extends JPanel
-        implements ActionListener, Runnable {
+public class ChatPanel extends JPanel {
 
-    private JTextArea chatArea;
-    private JTextField messageField;
-    private JList<String> userList, groupList;
-    private PrintWriter out;
-    private BufferedReader in;
-    private String username;
+    JList<String> users, groups;
+    JTextArea area;
+    JTextField input;
+
+    PrintWriter out;
+    BufferedReader in;
+
+    String target;
+    boolean isGroup;
 
     public ChatPanel(String username) {
-        this.username = username;
+
         setLayout(new BorderLayout());
 
-        JLabel title = new JLabel("Chat – " + username, JLabel.CENTER);
-        add(title, BorderLayout.NORTH);
+        DefaultListModel<String> um = new DefaultListModel<>();
+        um.addElement("sunny");
+        um.addElement("rahul");
 
-        // LEFT PANEL (Users + Groups)
-        DefaultListModel<String> users =
-                new DefaultListModel<>();
-        users.addElement("rahul");
-        users.addElement("anu");
+        DefaultListModel<String> gm = new DefaultListModel<>();
+        gm.addElement("java");
 
-        DefaultListModel<String> groups =
-                new DefaultListModel<>();
-        groups.addElement("java");
-        groups.addElement("project");
+        users = new JList<>(um);
+        groups = new JList<>(gm);
 
-        userList = new JList<>(users);
-        groupList = new JList<>(groups);
-
-        JPanel left = new JPanel(new GridLayout(2, 1));
-        left.add(new JScrollPane(userList));
-        left.add(new JScrollPane(groupList));
+        JPanel left = new JPanel(new GridLayout(2,1));
+        left.add(new JScrollPane(users));
+        left.add(new JScrollPane(groups));
         add(left, BorderLayout.WEST);
 
-        // CHAT AREA
-        chatArea = new JTextArea();
-        chatArea.setEditable(false);
-        add(new JScrollPane(chatArea), BorderLayout.CENTER);
+        area = new JTextArea();
+        area.setEditable(false);
+        add(new JScrollPane(area), BorderLayout.CENTER);
 
-        // MESSAGE BOX
-        messageField = new JTextField();
-        JButton sendBtn = new JButton("Send");
+        input = new JTextField();
+        add(input, BorderLayout.SOUTH);
 
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.add(messageField, BorderLayout.CENTER);
-        bottom.add(sendBtn, BorderLayout.EAST);
-        add(bottom, BorderLayout.SOUTH);
-
-        sendBtn.addActionListener(this);
-        messageField.addActionListener(this);
-
-        // SOCKET
-        try {
-            Socket socket = new Socket("localhost", 5000);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
-            out.println(username);
-            new Thread(this).start();
-        } catch (Exception e) {
-            chatArea.setText("Server not running");
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        String msg = messageField.getText();
-        if (msg.isEmpty()) return;
-
-        if (!userList.isSelectionEmpty()) {
-            out.println(CryptoUtil.encrypt(
-                "@" + userList.getSelectedValue() + " " + msg));
-        }
-        else if (!groupList.isSelectionEmpty()) {
-            out.println(CryptoUtil.encrypt(
-                "#" + groupList.getSelectedValue() + " " + msg));
-        }
-        else {
-            JOptionPane.showMessageDialog(this,
-                    "Select a user or group");
-        }
-
-        messageField.setText("");
-    }
-
-    @Override
-    public void run() {
-        try {
-            String msg;
-            while ((msg = in.readLine()) != null) {
-                chatArea.append(
-                    CryptoUtil.decrypt(msg) + "\n");
+        users.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                target = users.getSelectedValue();
+                isGroup = false;
+                area.setText("Private chat with " + target + "\n");
             }
-        } catch (Exception ignored) {}
+        });
+
+        groups.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                target = groups.getSelectedValue();
+                isGroup = true;
+                area.setText("Group chat: " + target + "\n");
+            }
+        });
+
+        input.addActionListener(e -> {
+            if (target == null) return;
+
+            String msg = input.getText();
+            if (isGroup)
+                out.println(CryptoUtil.encrypt("#" + target + " " + msg));
+            else
+                out.println(CryptoUtil.encrypt("@" + target + " " + msg));
+
+            input.setText("");
+        });
+
+        connect(username);
+    }
+
+    void connect(String username) {
+        try {
+            Socket s = new Socket("localhost", 5000);
+            out = new PrintWriter(s.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            out.println(username);
+
+            new Thread(() -> listen()).start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void listen() {
+        try {
+            String enc;
+            while ((enc = in.readLine()) != null) {
+                String msg = CryptoUtil.decrypt(enc);
+                SwingUtilities.invokeLater(() ->
+                        area.append(msg + "\n"));
+            }
+        } catch (Exception e) {
+            System.out.println("Disconnected");
+        }
     }
 }
